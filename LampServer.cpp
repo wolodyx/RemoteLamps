@@ -14,12 +14,24 @@
 #include "Commands.h"
 
 
+//! Список зарегистрировавшихся фонарей: номер фонаря и его сокет.
 std::map<int,int> g_lamps;
 
+//! Функция для регистрации фонарей (работает в отдельном потоке).
 static void* thread_register_lamps(void* arg);
+
 void Print(const char* message);
+
+//! Занесение фонаря в список (регистрация).
 int RegisterLamp(int sd);
-bool ParseCommandLine(const std::string&, int&, Command&);
+
+/**
+\brief Разбор командной строки для управления фонарем.
+\param cmdline Строка с командой.
+\param[out] index Номер фонаря.
+\param cmd Управляющая команда.
+*/
+bool ParseCommandLine(const std::string& cmdline, int& index, Command& cmd);
 
 #define CHECK_AND_EXIT(cond, message) \
   if(!(cond)) \
@@ -31,24 +43,30 @@ bool ParseCommandLine(const std::string&, int&, Command&);
 
 int main(int argc, char** argv)
 {
+  // Подготовка структуры с адресом сервера.
   sockaddr_in addr;
   memset(&addr, 0, sizeof(sockaddr_in));
   addr.sin_family = AF_INET;
   addr.sin_port = htons(9999);
   addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
+  // Создаем серверный сокет для связи с клиентами.
   int sd = socket(AF_INET, SOCK_STREAM, 0);
   CHECK_AND_EXIT(sd != -1, "Socket error");
 
+  // Привязываем адрес к серверу.
   CHECK_AND_EXIT(
     0 == bind(sd, (struct sockaddr*)&addr, sizeof(addr)),
     "Bind error");
 
+  // Переходим в режим прослушивания.
   CHECK_AND_EXIT(0 == listen(sd, 10), "Listen error");
 
+  // Запускаем в отедльном потоке функцию регистрации фонарей.
   pthread_t thread;
   pthread_create(&thread, NULL, thread_register_lamps, (void*)&sd);
 
+  // Цикл обработки команд от пользователя сервера.
   while(true)
   {
     std::string cmdline;

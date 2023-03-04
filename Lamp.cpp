@@ -22,9 +22,14 @@
     return EXIT_FAILURE; \
   }
 
+
+//! \brief Функции управления лампой.
+//!\{
 void TurnOnLamp();
 void TurnOffLamp();
 void ChangeLampColor(const std::vector<char>&);
+//!\}
+
 
 int main(int argc, char** argv)
 {
@@ -37,8 +42,7 @@ int main(int argc, char** argv)
   if(argc > 2)
     port = atoi(argv[2]);
 
-  std::cout << "host: " << host << std::endl;
-  std::cout << "port: " << port << std::endl;
+  std::cout << "IP address: " << host << ":" << port << std::endl;
 
   // Подготовка структуры с адресом сервера.
   sockaddr_in addr;
@@ -50,21 +54,23 @@ int main(int argc, char** argv)
     addr.sin_addr.s_addr != INADDR_NONE,
     "Address invalid");
 
+  // Создаем клиентский сокет для связи с сервером.
   int sd = socket(AF_INET, SOCK_STREAM, 0);
-  CHECK_AND_EXIT(sd != -1, "Not socket!");
+  CHECK_AND_EXIT(sd != -1, "Socket failure");
 
+  // Связываемся с сервером.
   CHECK_AND_EXIT(
     -1 != connect(sd, (struct sockaddr*)&addr, sizeof(addr)),
-    "Connect failure!");
+    "Connect failure");
 
+  // Регистрируемся у сервера.
   CHECK_AND_EXIT(
     SendCommand(sd, Cmd_Hello()),
-    "Not server");
+    "Server response error");
   
   // Цикл обработки поступающих команд.
   while(true)
   {
-    //std::cout << "Wait command ..." << std::endl;
     Command cmd = RecieveCommand(sd);
 
     switch(cmd.type)

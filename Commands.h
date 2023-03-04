@@ -43,7 +43,5 @@ Command RecieveCommand(int sd);
 
 std::ostream& operator<<(std::ostream&, const Command&);
 
-void AbortByMessage(const char*);
-
 #endif //RemoteLamp_Utility_Commands_h
 
