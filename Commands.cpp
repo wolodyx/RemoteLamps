@@ -49,6 +49,12 @@ bool Command::Send(int sd, const Command& cmd)
 }
 
 
+bool Command::operator!() const
+{
+  return type == CmdType_Empty;
+}
+
+
 Command Command::Recieve(int sd)
 {
   char buf[128];

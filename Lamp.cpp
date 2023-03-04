@@ -96,6 +96,9 @@ int main(int argc, char** argv)
     lamp.Render();
     Command cmd = Command::Recieve(sd);
 
+    if(!cmd)
+      break;
+
     switch(cmd.GetType())
     {
       case CmdType_On:

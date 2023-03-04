@@ -48,6 +48,8 @@ public:
   Command(CmdType t, const std::vector<char>& val = std::vector<char>())
     : type(t), value(val) {}
 
+  bool operator!() const;
+
   CmdType GetType() const;
 
   char GetCharValue(size_t index) const { return value[index]; }
