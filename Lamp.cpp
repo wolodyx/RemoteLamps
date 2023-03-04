@@ -23,12 +23,33 @@
   }
 
 
-//! \brief Функции управления лампой.
-//!\{
-void TurnOnLamp();
-void TurnOffLamp();
-void ChangeLampColor(const std::vector<char>&);
-//!\}
+//! Лампа: состояние, управление и отрисовка.
+class LampState
+{
+private:
+  bool m_on;
+  ColorType m_color;
+public:
+  LampState() : m_on(false), m_color(Color_Red) {}
+  void TurnOn() { m_on = true; }
+  void TurnOff() { m_on = false; }
+  void SetColor(ColorType clr) { m_color = clr; }
+  void Render()
+  {
+    if(!m_on)
+    {
+      std::clog << "\r\x1b[0mLamp";
+      return;
+    }
+
+    if(m_color == Color_Blue)
+      std::clog << "\r\x1b[37;44;5mLamp\x1b[0m";
+    else if(m_color == Color_Red)
+      std::clog << "\r\x1b[37;41;5mLamp\x1b[0m";
+    else if(m_color == Color_Green)
+      std::clog << "\r\x1b[37;42;5mLamp\x1b[0m";
+  }
+};
 
 
 int main(int argc, char** argv)
@@ -65,55 +86,31 @@ int main(int argc, char** argv)
 
   // Регистрируемся у сервера.
   CHECK_AND_EXIT(
-    SendCommand(sd, Cmd_Hello()),
+    Command::Send(sd, Command::Hello()),
     "Server response error");
   
+  LampState lamp;
   // Цикл обработки поступающих команд.
   while(true)
   {
-    Command cmd = RecieveCommand(sd);
+    lamp.Render();
+    Command cmd = Command::Recieve(sd);
 
-    switch(cmd.type)
+    switch(cmd.GetType())
     {
       case CmdType_On:
-        TurnOnLamp();
+        lamp.TurnOn();
         break;
       case CmdType_Off:
-        TurnOffLamp();
+        lamp.TurnOff();
         break;
       case CmdType_Color:
-        ChangeLampColor(cmd.value);
-        break;
-      default:
+        lamp.SetColor(static_cast<ColorType>(cmd.GetCharValue(0)));
         break;
     }
   }
 
   close(sd);
   return EXIT_SUCCESS;
-}
-
-
-void TurnOnLamp()
-{
-  std::clog << "\r\x1b[31;43mLamp\x1b[0m";
-}
-
-
-void TurnOffLamp()
-{
-  std::clog << "\r\x1b[0mLamp";
-}
-
-
-void ChangeLampColor(const std::vector<char>& color)
-{
-  std::string clr(color.begin(), color.end());
-  if(clr == "blue")
-    std::clog << "\r\x1b[31;44;5mLamp\x1b[0m";
-  else if(clr == "red")
-    std::clog << "\r\x1b[33;41;5mLamp\x1b[0m";
-  else if(clr == "green")
-    std::clog << "\r\x1b[33;42;5mLamp\x1b[0m";
 }
 

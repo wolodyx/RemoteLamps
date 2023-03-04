@@ -87,7 +87,7 @@ int main(int argc, char** argv)
       continue;
     }
 
-    SendCommand(it->second, cmd);
+    Command::Send(it->second, cmd);
   }
 
   return 0;
@@ -119,25 +119,22 @@ bool ParseCommandLine(
   if(nitem < 2)
     return false;
 
-  CmdType cmdType;
   if(strcmp(cmdName,"on") == 0)
-    cmdType = CmdType_On;
+    cmd = Command::On();
   else if(strcmp(cmdName,"off") == 0)
-    cmdType = CmdType_Off;
+    cmd = Command::Off();
   else if(strcmp(cmdName,"color") == 0)
-    cmdType = CmdType_Color;
+  {
+    if(strcmp(cmdArg,"red") == 0)
+      cmd = Command::Color(Color_Red);
+    else if(strcmp(cmdArg,"green") == 0)
+      cmd = Command::Color(Color_Green);
+    else if(strcmp(cmdArg,"blue") == 0)
+      cmd = Command::Color(Color_Blue);
+    else return false;
+  }
   else return false;
 
-  if(cmdType == CmdType_Color)
-  {
-    if(  strcmp(cmdArg,"red") != 0
-      && strcmp(cmdArg,"green") != 0
-      && strcmp(cmdArg,"blue") != 0)
-      return false;
-  }
-  
-  std::vector<char> value(cmdArg, cmdArg + strlen(cmdArg));
-  cmd = Command(cmdType, value);
   return true;
 }
 
@@ -157,7 +154,7 @@ void* thread_register_lamps(void* arg)
       continue;
     }
 
-    auto cmd = RecieveCommand(sd2);
+    auto cmd = Command::Recieve(sd2);
     if(cmd.GetType() == CmdType_Hello)
     {
       int index = RegisterLamp(sd2);

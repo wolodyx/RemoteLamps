@@ -11,19 +11,33 @@ CmdType Command::GetType() const
 }
 
 
-Command Cmd_Hello()
+Command Command::Hello()
 {
   return Command(CmdType_Hello);
 }
 
 
-Command Cmd_On()
+Command Command::On()
 {
   return Command(CmdType_On);
 }
 
 
-bool SendCommand(int sd, const Command& cmd)
+Command Command::Off()
+{
+  return Command(CmdType_Off);
+}
+
+
+Command Command::Color(ColorType clr)
+{
+  std::vector<char> value(1);
+  value[0] = static_cast<char>(clr);
+  return Command(CmdType_Color, value);
+}
+
+
+bool Command::Send(int sd, const Command& cmd)
 {
   std::vector<char> buf(3+cmd.value.size());
   buf[0] = static_cast<char>(cmd.type);
@@ -35,7 +49,7 @@ bool SendCommand(int sd, const Command& cmd)
 }
 
 
-Command RecieveCommand(int sd)
+Command Command::Recieve(int sd)
 {
   char buf[128];
   ssize_t n = read(sd, buf, 1);

@@ -17,8 +17,31 @@ enum CmdType
 };
 
 
-struct Command
+enum ColorType
 {
+  Color_Red   = 1,
+  Color_Blue  = 2,
+  Color_Green = 3
+};
+
+
+class Command
+{
+public:
+
+  static Command Hello();
+  static Command On();
+  static Command Off();
+  static Command Color(ColorType);
+
+  //! Отправка данных типа `Command` через сокет.
+  static bool Send(int sd, const Command&);
+
+  //! Прием данных типа `Command` через сокет.
+  static Command Recieve(int sd);
+
+public:
+
   Command()
     : type(CmdType_Empty) {}
 
@@ -27,19 +50,13 @@ struct Command
 
   CmdType GetType() const;
 
+  char GetCharValue(size_t index) const { return value[index]; }
+
+private:
   uint8_t type;
   std::vector<char> value;
 };
 
-
-Command Cmd_Hello();
-Command Cmd_On();
-
-//! Отправка данных типа `Command` через сокет.
-bool SendCommand(int sd, const Command&);
-
-//! Прием данных типа `Command` через сокет.
-Command RecieveCommand(int sd);
 
 std::ostream& operator<<(std::ostream&, const Command&);
 
