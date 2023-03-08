@@ -25,6 +25,9 @@ void Print(const char* message);
 //! Занесение фонаря в список (регистрация).
 int RegisterLamp(int sd);
 
+//! Закрытие сокетов, соединяющих сервер с клиентами.
+void CloseLampsConnection();
+
 /**
 \brief Разбор командной строки для управления фонарем.
 \param cmdline Строка с командой.
@@ -90,6 +93,7 @@ int main(int argc, char** argv)
     Command::Send(it->second, cmd);
   }
 
+  CloseLampsConnection();
   return 0;
 }
 
@@ -164,5 +168,12 @@ void* thread_register_lamps(void* arg)
 
   close(sd);
   return NULL;
+}
+
+
+void CloseLampsConnection()
+{
+  for(auto i2s : g_lamps)
+    close(i2s.second);
 }
 
