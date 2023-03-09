@@ -94,6 +94,7 @@ int main(int argc, char** argv)
   }
 
   CloseLampsConnection();
+  close(sd);
   return 0;
 }
 
@@ -166,7 +167,6 @@ void* thread_register_lamps(void* arg)
     }
   }
 
-  close(sd);
   return NULL;
 }
 
